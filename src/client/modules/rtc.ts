@@ -38,11 +38,12 @@ let hasRelay = false;
 // Costs a little delay. Applies to calls set up after it changes.
 let hideIp = false;
 export const setHideIp = (on: boolean) => { hideIp = on; };
-// Told the reason: true when the relay has used up this month's free allowance (on Flow's side).
-let onRelayUnavailable: ((usedUp: boolean) => void) | undefined;
-export const whenRelayUnavailable = (run: (usedUp: boolean) => void) => { onRelayUnavailable = run; };
+// Told why: `down` is true when Flow's relay gave out (say its free monthly data ran out),
+// false when there was no relay login to begin with.
+let onRelayUnavailable: ((down: boolean) => void) | undefined;
+export const whenRelayUnavailable = (run: (down: boolean) => void) => { onRelayUnavailable = run; };
 let warnedNoRelay = false;
-let relayUsedUp = false;
+let warnedRelayDown = false;
 
 // Every signal is a database round trip (room_send), and they go out one at a time, so
 // a call's dozen or so candidates used to queue behind each other for a second or more.
@@ -77,11 +78,7 @@ const fetchTurnCredentials = async () => {
     fetchTurnPromise = (async () => {
         try {
             const response = await api('/api/turn-credentials', {}, 5000);
-            if (!response.ok) {
-                relayUsedUp = response.status === 503 && (await response.json().catch(() => ({}))).reason === 'relay-allowance';
-                return;
-            }
-            relayUsedUp = false;
+            if (!response.ok) return;
             const data = await response.json();
             if (Array.isArray(data.iceServers) && data.iceServers.length) {
                 hasRelay = data.iceServers.some((server: RTCIceServer) => [server.urls].flat().some(url => /^turns?:/.test(String(url))));
@@ -333,8 +330,7 @@ export const getOrCreatePeerConnection = async (userId: string, onRemoteStream: 
         // Fails closed: with the address to be hidden and no relay to hide it behind, the call
         // stays relay-only and simply doesn't connect, and the person is told how to choose.
         const relayOnly = hideIp;
-        // Everyone hears once when the relay's allowance is used up; otherwise only those hiding their IP.
-        if ((hideIp || relayUsedUp) && !hasRelay && !warnedNoRelay) { warnedNoRelay = true; onRelayUnavailable?.(relayUsedUp); }
+        if (hideIp && !hasRelay && !warnedNoRelay) { warnedNoRelay = true; onRelayUnavailable?.(false); }
         if (hasRelay) warnedNoRelay = false;
         const pc = new RTCPeerConnection({ ...iceConfig, iceTransportPolicy: relayOnly ? 'relay' : 'all' });
         peers[userId] = pc;
@@ -350,8 +346,17 @@ export const getOrCreatePeerConnection = async (userId: string, onRemoteStream: 
             });
         }
 
+        // With a relay login but no relay route once gathering ends, the relay gave out (the free
+        // plan's data ran out, or it's down). Everyone hears once that it's on Flow's side.
+        let gotRelayRoute = false;
+        pc.addEventListener('icegatheringstatechange', () => {
+            if (pc.iceGatheringState !== 'complete' || !hasRelay) return;
+            if (gotRelayRoute) { warnedRelayDown = false; return; }
+            if (!warnedRelayDown) { warnedRelayDown = true; onRelayUnavailable?.(true); }
+        });
         pc.onicecandidate = (event) => {
             if (!event.candidate) return;
+            if (/ typ relay/.test(event.candidate.candidate)) gotRelayRoute = true;
             // Belt and braces: in relay mode nothing but relay candidates ever leaves this browser.
             if (relayOnly && !/ typ relay/.test(event.candidate.candidate)) return;
             queueCandidate(userId, serializeCandidate(event.candidate));

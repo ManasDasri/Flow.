@@ -11,12 +11,12 @@ let fromBoard = false;
 let choice: boolean | null = (() => { try { const saved = localStorage.getItem('flow_hide_ip'); return saved === null ? null : saved === '1'; } catch { return null; } })();
 let hiding: boolean | null = null;
 export const hidingIp = () => choice ?? fromBoard;
-whenRelayUnavailable(usedUp => {
-    if (!usedUp) return notify('Calls are waiting for the relay server, which hides your IP address. To connect directly instead, turn off “Hide my IP address” in timer settings.', 'error');
-    // The relay's free monthly allowance ran out. That's ours to fix, so say so plainly.
+whenRelayUnavailable(down => {
+    if (!down) return notify('Calls are waiting for the relay server, which hides your IP address. To connect directly instead, turn off “Hide my IP address” in timer settings.', 'error');
+    // Flow's relay gave out, most likely its free data for the month. That's ours to fix, so say so plainly.
     notify(hidingIp()
-        ? 'Sorry, this one’s on us: Flow’s relay server has run out of data for this month, so calls that hide your IP can’t connect. To connect directly instead, turn off “Hide my IP address” in timer settings.'
-        : 'Heads up, this one’s on us: Flow’s relay server has run out of data for this month. Calls still connect directly, but some school or office networks may not connect until it resets.', 'error');
+        ? 'Sorry, this one’s on us: Flow’s relay server isn’t working right now (it may have run out of free data for this month), so calls that hide your IP can’t connect. To connect directly instead, turn off “Hide my IP address” in timer settings.'
+        : 'Heads up, this one’s on us: Flow’s relay server isn’t working right now. Calls still connect directly, but some school or office networks may not connect until it’s back.', 'error');
 });
 
 // Set before joining: did this visit come from the board?

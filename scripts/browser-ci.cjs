@@ -4,8 +4,8 @@ const { mkdirSync, readFileSync, writeFileSync } = require('node:fs');
 const { Script } = require('node:vm');
 const { build } = require('esbuild');
 process.env.GROQ_API_KEY = '';
-process.env.CLOUDFLARE_TURN_KEY_ID = '';
-process.env.CLOUDFLARE_TURN_API_TOKEN = '';
+process.env.EXPRESSTURN_USERNAME = '';
+process.env.EXPRESSTURN_PASSWORD = '';
 const app = require('../server');
 
 (async () => {

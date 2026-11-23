@@ -23,8 +23,7 @@ In Vercel Project Settings → Environment Variables, copy these values directly
 | Name | Purpose |
 | --- | --- |
 | `GROQ_API_KEY` | Study-assistant requests |
-| `CLOUDFLARE_TURN_KEY_ID`, `CLOUDFLARE_TURN_API_TOKEN` | TURN key from Cloudflare Realtime, for relay logins |
-| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ANALYTICS_TOKEN` | Reads this month's relay usage (token needs Account Analytics read), so relays stop at 950 GB and stay in the free 1,000 GB |
+| `EXPRESSTURN_USERNAME`, `EXPRESSTURN_PASSWORD` | Relay (TURN) login from ExpressTURN's free plan (1,000 GB a month, no card) |
 
 Do not put these values in public files, Git, or chat. Existing Supabase public configuration and database migrations remain unchanged. If any Supabase email redirect allowlist is restricted to the custom domain, add the deployment URL only when testing email redirects there; keeping `flow-study.me` preserves the existing production origin.
 
@@ -47,7 +46,7 @@ The apex A record was switched from Render (`216.24.57.1`) to Vercel (`216.198.7
 
 Both pages load the native HTML Speed Insights integration. It loads Vercel's deferred performance script on the custom domain and Vercel deployment URLs, strips query strings/fragments from reported URLs, and stays disabled on localhost. Enable Speed Insights in the project's dashboard to see incoming real-user measurements; the integration is bundled by Astro and does not require a Next.js component. The fixture browser suite intercepts telemetry so synthetic stress runs do not enter the dashboard. No paid Insights upgrade is enabled by this code.
 
-The browser loads the site without waiting for an API function. Groq has a 15-second request deadline without SDK retries. Cloudflare usage and TURN requests each have a four-second deadline, and the browser stops waiting for TURN after five seconds and continues with STUN. STUN-only calls may still fail on restrictive networks; a working TURN configuration remains important.
+The browser loads the site without waiting for an API function. Groq has a 15-second request deadline without SDK retries. The browser stops waiting for TURN after five seconds and continues with STUN. STUN-only calls may still fail on restrictive networks; a working TURN configuration remains important.
 
 The existing API request limits remain in Express. Those counters are local to each function instance, so they are not a global distributed quota. Monitor provider and Hobby usage before increasing traffic; distributed quotas can be added when needed.
 

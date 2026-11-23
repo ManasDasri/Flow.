@@ -5,7 +5,7 @@ const { once } = require('node:events');
 const { mkdirSync, readFileSync, rmSync } = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const { resolve } = require('node:path');
-process.env.GROQ_API_KEY = process.env.CLOUDFLARE_TURN_KEY_ID = process.env.CLOUDFLARE_TURN_API_TOKEN = '';
+process.env.GROQ_API_KEY = process.env.EXPRESSTURN_USERNAME = process.env.EXPRESSTURN_PASSWORD = '';
 const app = require('../server');
 
 const OUT = resolve(__dirname, '../public/rooms');

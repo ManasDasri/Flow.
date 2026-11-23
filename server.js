@@ -200,54 +200,13 @@ app.post('/api/ai', limiter(10), requireUser('ai'), async (req, res) => {
     }
 });
 
-// Relay (TURN) from Cloudflare. Its first 1,000 GB a month (data sent to browsers) are
-// free, so Flow stops handing out relay logins at 950 GB and never runs into paid usage.
-// Calls then connect directly, and the browser tells people it's on our end.
-const RELAY_CAP_BYTES = 950e9;
-let relayUsage = { bytes: 0, checkedAt: 0 };
-async function relayBytesThisMonth() {
-    // Under the cap the count is reused for ten minutes; at the cap it is checked every time,
-    // so relays come back as soon as a new month starts.
-    if (Date.now() - relayUsage.checkedAt < 10 * 60 * 1000) return relayUsage.bytes;
-    const today = new Date().toISOString().slice(0, 10);
-    const query = `{ viewer { accounts(filter: { accountTag: ${JSON.stringify(process.env.CLOUDFLARE_ACCOUNT_ID)} }) {
-        callsTurnUsageAdaptiveGroups(limit: 1, filter: { date_geq: "${today.slice(0, 8)}01", date_leq: "${today}" }) { sum { egressBytes } } } } }`;
-    const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + process.env.CLOUDFLARE_ANALYTICS_TOKEN, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
-        signal: AbortSignal.timeout(4000)
-    });
-    const { data, errors } = await response.json();
-    if (!response.ok || errors?.length || !data) throw new Error('Cloudflare analytics: ' + JSON.stringify(errors || response.status));
-    const bytes = data.viewer.accounts[0]?.callsTurnUsageAdaptiveGroups[0]?.sum.egressBytes || 0;
-    if (bytes < RELAY_CAP_BYTES) relayUsage = { bytes, checkedAt: Date.now() };
-    return bytes;
-}
-
-app.post('/api/turn-credentials', limiter(20), requireUser('turn'), async (req, res) => {
-    const { CLOUDFLARE_TURN_KEY_ID: keyId, CLOUDFLARE_TURN_API_TOKEN: keyToken, CLOUDFLARE_ACCOUNT_ID: account, CLOUDFLARE_ANALYTICS_TOKEN: analytics } = process.env;
-    if (!keyId || !keyToken || !account || !analytics) return res.status(500).json({ error: 'TURN is not configured on the server.' });
-    try {
-        let used = 0;
-        // ponytail: if Cloudflare's analytics is down, relays stay on; the 50 GB margin covers short outages.
-        try { used = await relayBytesThisMonth(); } catch (error) { console.error('TURN usage check failed:', error); }
-        if (used >= RELAY_CAP_BYTES) return res.status(503).json({ error: 'The relay has used up this month\'s free allowance.', reason: 'relay-allowance' });
-
-        const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${encodeURIComponent(keyId)}/credentials/generate-ice-servers`, {
-            method: 'POST',
-            headers: { Authorization: 'Bearer ' + keyToken, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ttl: 3600 }), // relay logins good for one hour
-            signal: AbortSignal.timeout(4000)
-        });
-        if (!response.ok) throw new Error('Cloudflare TURN: ' + response.status);
-        const { iceServers } = await response.json();
-        // Browsers block port 53, so those addresses would only time out.
-        res.json({ iceServers: iceServers.map(server => ({ ...server, urls: [server.urls].flat().filter(url => !/:53\b/.test(url)) })) });
-    } catch (error) {
-        console.error('TURN error:', error);
-        res.status(500).json({ error: 'Failed to generate TURN credentials' });
-    }
+// Relay (TURN) from ExpressTURN's free plan: 1,000 GB a month, no card on file, so it can
+// never bill; past the allowance the relay just stops and browsers say it's on our side.
+// The free plan has one fixed login (no short-lived ones), handed only to signed-in users.
+app.post('/api/turn-credentials', limiter(20), requireUser('turn'), (req, res) => {
+    const { EXPRESSTURN_USERNAME: username, EXPRESSTURN_PASSWORD: credential } = process.env;
+    if (!username || !credential) return res.status(500).json({ error: 'TURN is not configured on the server.' });
+    res.json({ iceServers: [{ urls: ['turn:free.expressturn.com:3478?transport=udp', 'turn:free.expressturn.com:3478?transport=tcp'], username, credential }] });
 });
 
 app.use((error, req, res, next) => {
