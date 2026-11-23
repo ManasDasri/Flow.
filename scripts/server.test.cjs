@@ -1,8 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 process.env.GROQ_API_KEY = '';
-process.env.TWILIO_ACCOUNT_SID = '';
-process.env.TWILIO_AUTH_TOKEN = '';
+process.env.CLOUDFLARE_TURN_KEY_ID = '';
+process.env.CLOUDFLARE_TURN_API_TOKEN = '';
 const http = require('node:http');
 const { once } = require('node:events');
 test('HTTP boundaries and bounded local concurrency', async t => {
@@ -207,6 +207,51 @@ test('HTTP boundaries and bounded local concurrency', async t => {
         const response = await fetch(origin + '/api/turn-credentials', { method: 'POST', headers: { Authorization: 'Bearer valid' } });
         assert.equal(response.status, 500);
         assert.equal(typeof (await response.json()).error, 'string');
+    });
+    await t.test('TURN comes from Cloudflare, and stops at 950 GB a month so it stays free', async t => {
+        Object.assign(process.env, { CLOUDFLARE_TURN_KEY_ID: 'key', CLOUDFLARE_TURN_API_TOKEN: 'key-token', CLOUDFLARE_ACCOUNT_ID: 'account', CLOUDFLARE_ANALYTICS_TOKEN: 'analytics' });
+        const realFetch = globalThis.fetch;
+        let usedBytes = 0;
+        const asked = [];
+        globalThis.fetch = async (url, options) => {
+            if (String(url).startsWith('https://api.cloudflare.com/')) {
+                asked.push('usage');
+                if (usedBytes === null) return new Response('{}', { status: 500 });
+                return Response.json({ data: { viewer: { accounts: [{ callsTurnUsageAdaptiveGroups: [{ sum: { egressBytes: usedBytes } }] }] } }, errors: null });
+            }
+            if (String(url).startsWith('https://rtc.live.cloudflare.com/')) {
+                asked.push('credentials');
+                assert.equal(options.headers.Authorization, 'Bearer key-token');
+                return Response.json({ iceServers: [{ urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.cloudflare.com:53'] }, { urls: ['turn:turn.cloudflare.com:3478?transport=udp', 'turn:turn.cloudflare.com:53?transport=udp'], username: 'u', credential: 'c' }] }, { status: 201 });
+            }
+            return realFetch(url, options);
+        };
+        t.after(() => {
+            globalThis.fetch = realFetch;
+            for (const key of ['CLOUDFLARE_TURN_KEY_ID', 'CLOUDFLARE_TURN_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_ANALYTICS_TOKEN']) delete process.env[key];
+        });
+        const call = async () => {
+            delete require.cache[require.resolve('../server')];
+            const fresh = require('../server').listen(0, '127.0.0.1');
+            await once(fresh, 'listening');
+            try {
+                const response = await realFetch('http://127.0.0.1:' + fresh.address().port + '/api/turn-credentials', { method: 'POST', headers: { Authorization: 'Bearer valid' } });
+                return { status: response.status, body: await response.json() };
+            } finally { await new Promise(resolve => fresh.close(resolve)); }
+        };
+        usedBytes = 960e9;
+        asked.length = 0;
+        let result = await call();
+        assert.equal(result.status, 503, 'Past 950 GB no relay logins are handed out');
+        assert.equal(result.body.reason, 'relay-allowance', 'and the browser can tell why');
+        assert.deepEqual(asked, ['usage'], 'and Cloudflare is never asked for one');
+        usedBytes = 10e9;
+        result = await call();
+        assert.equal(result.status, 200, 'Under the cap the relay works');
+        assert(result.body.iceServers.flatMap(server => server.urls).some(url => url.startsWith('turn:')), 'with Cloudflare relay addresses');
+        assert(!result.body.iceServers.flatMap(server => server.urls).some(url => url.includes(':53')), 'without port 53, which browsers block');
+        usedBytes = null;
+        assert.equal((await call()).status, 200, 'A failed usage check does not take the relay away');
     });
     await t.test('100 simultaneous local static requests complete', async () => {
         const start = performance.now();

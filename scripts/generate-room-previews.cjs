@@ -5,7 +5,7 @@ const { once } = require('node:events');
 const { mkdirSync, readFileSync, rmSync } = require('node:fs');
 const { spawnSync } = require('node:child_process');
 const { resolve } = require('node:path');
-process.env.GROQ_API_KEY = process.env.TWILIO_ACCOUNT_SID = process.env.TWILIO_AUTH_TOKEN = '';
+process.env.GROQ_API_KEY = process.env.CLOUDFLARE_TURN_KEY_ID = process.env.CLOUDFLARE_TURN_API_TOKEN = '';
 const app = require('../server');
 
 const OUT = resolve(__dirname, '../public/rooms');

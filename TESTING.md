@@ -29,7 +29,7 @@ FLOW_TEST_PGPORT=55439 npm run test:db
 
 The workflow in .github/workflows/ci.yml runs on PRs targeting main, pushes to main (including merges), and manual dispatch. Strict diagnostics, production builds, and Node tests run on 22, 24, and 26; migration tests use an isolated PostgreSQL 17 service; Chromium runs the browser suite; the production dependency audit fails on high/critical findings. Browser diagnostics are uploaded even on failure and retained for seven days. Configure required status checks in GitHub branch rules if merges should be blocked.
 
-The test server clears AI and Twilio provider credentials before loading Express. CI never needs production secrets. The PostgreSQL service password is a disposable fixture value.
+The test server clears AI and TURN provider credentials before loading Express. CI never needs production secrets. The PostgreSQL service password is a disposable fixture value.
 
 ## Coverage inventory
 

@@ -934,7 +934,8 @@ async (page) => {
     // Someone drops off without a word (Wi-Fi off) and rejoins: the other side still holds the
     // old call. The new page's call must replace it, and video must flow again within seconds.
     await page.unroute('**/api/turn-credentials');
-    await page.route('**/api/turn-credentials', route => route.fulfill({ status: 503, body: '' }));
+    // The relay has used up its free monthly allowance: calls still connect directly, and the person is told once.
+    await page.route('**/api/turn-credentials', route => route.fulfill({ status: 503, json: { reason: 'relay-allowance' } }));
     const rejoin = await page.evaluate(async () => {
         const danny = await import('/__flow-test/rtc.js?danny'), me = await import('/__flow-test/rtc.js?me'), meAgain = await import('/__flow-test/rtc.js?me-again');
         const NativePeer = window.RTCPeerConnection, calls = window.__fixture.calls, push = calls.push;
@@ -960,6 +961,8 @@ async (page) => {
         const videos = [];
         try {
             for (const page of [danny, me, meAgain]) { const v = document.createElement('video'); videos.push(v); await page.initMedia(v); }
+            const toldUsedUp = [];
+            me.whenRelayUnavailable(usedUp => toldUsedUp.push(usedUp));
             await me.callUser('danny', gotMine);
             await live(() => mineStream, () => me.isPeerConnected('danny'));
             const firstConnected = true;
@@ -981,7 +984,7 @@ async (page) => {
             Date.now = () => realNow() + 16000;
             const stuckLater = meAgain.peerNeedsCall('danny');
             Date.now = realNow;
-            return { firstConnected, replaced, stuckNow, stuckLater };
+            return { firstConnected, replaced, stuckNow, stuckLater, toldUsedUp };
         } finally {
             calls.push = push;
             for (const page of [danny, me, meAgain]) { page.removePeer('danny'); page.removePeer('me'); page.cleanupDummyStream(); }
@@ -990,6 +993,7 @@ async (page) => {
         }
     });
     assert(rejoin.firstConnected && rejoin.replaced, 'After a silent drop and rejoin, the old call is replaced and video flows: ' + JSON.stringify(rejoin));
+    assert(JSON.stringify(rejoin.toldUsedUp) === '[true]', 'With the relay allowance used up, the person is told once that it is on our side, and the call still connects: ' + JSON.stringify(rejoin));
     assert(!rejoin.stuckNow && rejoin.stuckLater, 'A call whose offer was lost is retried after 15 seconds: ' + JSON.stringify(rejoin));
 
     // A network change (another Wi-Fi): the call moves over with an ICE restart and keeps its video,

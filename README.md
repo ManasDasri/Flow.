@@ -69,8 +69,8 @@ The Supabase project URL and **public publishable key** live in [`supabase.confi
 | `GROQ_API_KEY` | Optional; enables `/api/ai` for study-assistant questions |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Optional; override `supabase.config.json` at build time and on the server |
 | `PUBLIC_TURNSTILE_SITE_KEY` | Optional; overrides `captchaSiteKey` in `supabase.config.json` at build time (see the captcha, below) |
-| `TWILIO_ACCOUNT_SID` | Optional; used with the auth token to obtain TURN credentials |
-| `TWILIO_AUTH_TOKEN` | Optional; server-side Twilio credential |
+| `CLOUDFLARE_TURN_KEY_ID`, `CLOUDFLARE_TURN_API_TOKEN` | Optional; a Cloudflare Realtime TURN key, used to obtain relay credentials |
+| `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ANALYTICS_TOKEN` | Needed with the TURN key; relay usage is checked so it stops at 950 GB a month (Cloudflare's free tier is 1,000 GB) |
 
 Keep `.env` out of version control. Without Groq, rooms still work and AI requests return a configuration message. Without TURN credentials, calls fall back to STUN and may fail across restrictive networks. Spotify embeds require no application API key; available playback depends on Spotify, the user's account, and browser permissions. YouTube availability depends on the video's embedding permissions.
 
@@ -138,7 +138,7 @@ Astro generates six static pages: the landing page (`/`), setup (`/start.html`),
 
 Supabase handles authentication, PostgreSQL persistence, task changes, presence, and room broadcasts. WebRTC carries camera and microphone media between peers, with TURN relay support when configured. Groq answers assistant requests through the server. Room chat and broadcasts are transient; tasks, profiles, and completed sessions are stored.
 
-`/api/ai` and `/api/turn-credentials` spend provider credit, so they require a signed-in user: the browser sends its Supabase access token and the server asks Supabase to validate it before calling Groq or Twilio. Both stay rate limited per address. Every page is served with a Content-Security-Policy and related headers, defined once in `vercel.json`.
+`/api/ai` and `/api/turn-credentials` spend provider credit, so they require a signed-in user: the browser sends its Supabase access token and the server asks Supabase to validate it before calling Groq or Cloudflare. Both stay rate limited per address. Every page is served with a Content-Security-Policy and related headers, defined once in `vercel.json`.
 
 Old invite links (`/?room=CODE`) redirect to the room. The landing page's opening (the wordmark in the dark, then a sunrise) is CSS only, plays once per browser session, and is skipped under reduced motion. Type is Bricolage Grotesque, self-hosted.
 

@@ -4,8 +4,8 @@ const { mkdirSync, readFileSync, writeFileSync } = require('node:fs');
 const { Script } = require('node:vm');
 const { build } = require('esbuild');
 process.env.GROQ_API_KEY = '';
-process.env.TWILIO_ACCOUNT_SID = '';
-process.env.TWILIO_AUTH_TOKEN = '';
+process.env.CLOUDFLARE_TURN_KEY_ID = '';
+process.env.CLOUDFLARE_TURN_API_TOKEN = '';
 const app = require('../server');
 
 (async () => {

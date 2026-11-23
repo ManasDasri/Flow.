@@ -38,9 +38,11 @@ let hasRelay = false;
 // Costs a little delay. Applies to calls set up after it changes.
 let hideIp = false;
 export const setHideIp = (on: boolean) => { hideIp = on; };
-let onRelayUnavailable: (() => void) | undefined;
-export const whenRelayUnavailable = (run: () => void) => { onRelayUnavailable = run; };
+// Told the reason: true when the relay has used up this month's free allowance (on Flow's side).
+let onRelayUnavailable: ((usedUp: boolean) => void) | undefined;
+export const whenRelayUnavailable = (run: (usedUp: boolean) => void) => { onRelayUnavailable = run; };
 let warnedNoRelay = false;
+let relayUsedUp = false;
 
 // Every signal is a database round trip (room_send), and they go out one at a time, so
 // a call's dozen or so candidates used to queue behind each other for a second or more.
@@ -75,7 +77,11 @@ const fetchTurnCredentials = async () => {
     fetchTurnPromise = (async () => {
         try {
             const response = await api('/api/turn-credentials', {}, 5000);
-            if (!response.ok) return;
+            if (!response.ok) {
+                relayUsedUp = response.status === 503 && (await response.json().catch(() => ({}))).reason === 'relay-allowance';
+                return;
+            }
+            relayUsedUp = false;
             const data = await response.json();
             if (Array.isArray(data.iceServers) && data.iceServers.length) {
                 hasRelay = data.iceServers.some((server: RTCIceServer) => [server.urls].flat().some(url => /^turns?:/.test(String(url))));
@@ -327,7 +333,8 @@ export const getOrCreatePeerConnection = async (userId: string, onRemoteStream: 
         // Fails closed: with the address to be hidden and no relay to hide it behind, the call
         // stays relay-only and simply doesn't connect, and the person is told how to choose.
         const relayOnly = hideIp;
-        if (hideIp && !hasRelay && !warnedNoRelay) { warnedNoRelay = true; onRelayUnavailable?.(); }
+        // Everyone hears once when the relay's allowance is used up; otherwise only those hiding their IP.
+        if ((hideIp || relayUsedUp) && !hasRelay && !warnedNoRelay) { warnedNoRelay = true; onRelayUnavailable?.(relayUsedUp); }
         if (hasRelay) warnedNoRelay = false;
         const pc = new RTCPeerConnection({ ...iceConfig, iceTransportPolicy: relayOnly ? 'relay' : 'all' });
         peers[userId] = pc;
