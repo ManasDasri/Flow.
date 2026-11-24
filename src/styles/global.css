@@ -266,22 +266,22 @@ select.input {
 .sky-dot { position: relative; width: 26px; height: 26px; flex-shrink: 0; overflow: hidden; border-radius: 50%; background: linear-gradient(var(--sky-top), var(--sky-bottom)); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--text) 18%, transparent); }
 .sky-dot::after { content: ''; position: absolute; left: 50%; bottom: -5px; width: 13px; height: 13px; translate: -50% 0; border-radius: 50%; background: var(--sun); }
 .sky-picker-list {
-    position: fixed; z-index: 6000; display: grid; grid-template-columns: repeat(3, 96px); gap: 6px; padding: 8px;
+    position: fixed; z-index: 6000; display: grid; grid-template-columns: repeat(5, 34px); gap: 8px; padding: 10px 12px 12px;
     border-radius: var(--radius-md); background: color-mix(in srgb, var(--bg) 96%, transparent); backdrop-filter: blur(16px) saturate(1.3);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent), 0 24px 60px -18px rgb(0 0 0 / .55);
     transform-origin: top right; animation: picker-in .22s var(--ease);
 }
 .sky-picker-list.up { transform-origin: bottom right; }
 @keyframes picker-in { from { opacity: 0; scale: .96; } }
-.sky-picker-list [role="option"] {
-    display: flex; flex-direction: column; gap: 6px; padding: 5px 5px 7px; border: 1.5px solid transparent; border-radius: 12px;
-    color: var(--text-2); font-size: .78rem; font-weight: 600; cursor: pointer; outline: none; transition: background-color .12s, border-color .12s;
-}
-.sky-picker-list [role="option"]:focus { background: color-mix(in srgb, var(--text) 9%, transparent); color: var(--text); }
-.sky-picker-list [role="option"]:focus-visible { border-color: var(--text); }
-.sky-picker-list [aria-selected="true"] { border-color: color-mix(in srgb, var(--text) 45%, transparent); color: var(--text); }
-.sky-picker-list .swatch { height: 34px; }
-@media (max-width: 760px) { .sky-picker-list { grid-template-columns: repeat(3, 88px); } }
+/* The name of the sky you're pointing at, above the dots. */
+.sky-picker-now { grid-column: 1 / -1; min-height: 1.3em; color: var(--text); font-size: .8rem; font-weight: 700; text-align: center; }
+.sky-picker-list [role="option"] { display: grid; padding: 0; border-radius: 50%; cursor: pointer; outline: none; transition: scale .2s var(--ease); }
+.sky-picker-list .swatch { width: 34px; height: 34px; border-radius: 50%; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--text) 16%, transparent); }
+.sky-picker-list .swatch::after { left: 50%; bottom: -7px; width: 16px; height: 16px; translate: -50% 0; }
+.sky-picker-list [role="option"]:focus { scale: 1.12; }
+.sky-picker-list [role="option"]:focus .swatch { box-shadow: 0 0 0 2px var(--text); }
+.sky-picker-list [aria-selected="true"] .swatch { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--sun); }
+.sky-option-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 /* Sky swatches, shared by the landing page and setup. */
 .swatches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }

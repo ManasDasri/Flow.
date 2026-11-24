@@ -1,7 +1,7 @@
-/* Setup: the sky and its sun in a panel on the left, one question at a time on the right, and nothing
-   to scroll. The sun reacts to each answer; on the length step it becomes the handle. Phones get a short sky strip on top. */
-.start { --panel: 42%; --horizon: 100svh; --sun-size: clamp(120px, 24svh, 220px); --sun-y: .5; position: relative; height: 100svh; overflow: hidden; }
-.start .sky { width: var(--panel); }
+/* Setup: a window into the room you're making on the left, one question at a time on the right, nothing to scroll.
+   Each answer adds to the window: your tile stands on the ground, the sky changes, the clock sets, the weather
+   plays. On the length step the sun is the handle. Phones get the window as a strip across the top. */
+.start { --panel: 42%; --horizon: 68%; --sun-size: clamp(96px, 18svh, 180px); --sun-y: .5; position: relative; height: 100svh; overflow: hidden; }
 .start .sun { transition: top .7s var(--ease), left .9s var(--ease), width .9s var(--ease); }
 /* On the length step the sun becomes a handle. */
 .start[data-step="length"] .sun { pointer-events: auto; cursor: grab; touch-action: none; }
@@ -9,8 +9,50 @@
 @keyframes hum { 50% { scale: 1.06; } }
 .start.sounding .sun { animation: hum 2.4s ease-in-out infinite; }
 
-.start-nav { position: absolute; inset: 0 0 auto; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 24px clamp(20px, 3.4vw, 48px); }
-/* The header spans the sky; only its logo and button take clicks, so the sun underneath can still be dragged. */
+/* ── The window ── */
+.scene {
+    position: absolute; top: 14px; bottom: 14px; left: 14px; width: calc(var(--panel) - 14px); overflow: hidden; isolation: isolate;
+    border-radius: 28px; background: color-mix(in srgb, var(--bg) 72%, var(--sky-top));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 8%, transparent); transition: box-shadow .8s var(--ease);
+}
+.start .sky { transition: filter 1.2s var(--ease); }
+/* The ground: the room's clock on the left, your tile on the right, standing on a horizon that glows faintly. */
+.scene-ground {
+    position: absolute; inset: var(--horizon) 0 0; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 0 clamp(20px, 3vw, 36px); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--sun) 40%, transparent);
+}
+.scene-clock { display: grid; gap: 4px; opacity: .25; transition: opacity .6s var(--ease); }
+.scene-clock span { color: var(--text-3); font-size: .78rem; font-weight: 600; }
+.scene-clock strong { font-size: clamp(2.4rem, 4.6vw, 4.4rem); font-weight: 800; line-height: .85; font-variant-numeric: tabular-nums; transition: text-shadow .6s; }
+.seen-length .scene-clock { opacity: 1; }
+.scene-you {
+    position: relative; display: grid; place-items: center; width: clamp(92px, 10vw, 136px); aspect-ratio: 4 / 3; flex-shrink: 0;
+    border-radius: 16px; background: color-mix(in srgb, var(--primary) 22%, var(--surface));
+    opacity: .25; translate: 0 10px; transition: opacity .6s var(--ease), translate .6s var(--ease), box-shadow .6s;
+}
+.named .scene-you { opacity: 1; translate: 0; }
+/* The name chip appears with the name, so a faint placeholder label never sits there unreadable. */
+.scene-you em { visibility: hidden; }
+.named .scene-you em { visibility: visible; }
+.scene-you b { color: var(--primary); font-size: clamp(2.2rem, 3.6vw, 3.4rem); font-weight: 800; font-stretch: 78%; font-variation-settings: 'wdth' 78; line-height: 1; }
+.scene-you em { position: absolute; top: 7px; left: 7px; max-width: calc(100% - 14px); overflow: hidden; padding: 2px 8px; border-radius: 999px; background: rgb(0 0 0 / .45); color: #fff; font-size: .68rem; font-style: normal; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+/* Whatever the current step adds gets a glow while you work on it. */
+.start[data-step="name"] .scene-you { box-shadow: 0 0 0 2px var(--sun), 0 18px 40px -16px var(--sun); }
+.start[data-step="length"] .scene-clock strong { text-shadow: 0 0 28px color-mix(in srgb, var(--sun) 70%, transparent); }
+/* The last step: the room is complete and the whole window glows. */
+.start[data-step="account"] .scene { box-shadow: 0 0 0 2px color-mix(in srgb, var(--sun) 60%, transparent), 0 30px 90px -30px var(--sun); }
+
+/* ── Weather: what you picked to listen to, drawn in the sky (src/client/weather.ts) ── */
+.weather { position: absolute; inset: 0 0 auto; z-index: 1; height: var(--horizon); overflow: hidden; pointer-events: none; }
+.weather canvas { display: block; width: 100%; height: 100%; }
+/* The sky itself shifts a little with the weather. */
+.start[data-sound="rain"] .sky { filter: saturate(.65) brightness(.8); }
+.start[data-sound="fire"] .sky { filter: sepia(.25) saturate(1.25) hue-rotate(-10deg); }
+.start[data-sound="night"] .sky { filter: brightness(.6) saturate(.9); }
+
+/* ── The questions ── */
+.start-nav { position: absolute; inset: 0 0 auto; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 32px clamp(28px, 3.4vw, 48px); }
+/* The header spans the window; only its logo and button take clicks, so the sun underneath can still be dragged. */
 .start-nav { pointer-events: none; }
 .start-nav > * { pointer-events: auto; }
 .start-main {
@@ -30,9 +72,23 @@
 .big-input::placeholder { color: color-mix(in srgb, var(--text) 32%, transparent); }
 .big-input:focus { border-color: var(--sun); }
 
-.start .swatches { margin-top: clamp(14px, 2.6svh, 22px); gap: 8px; }
-.start .swatches button { gap: 7px; padding: 6px 6px 8px; font-size: .8rem; }
-.start .swatch { height: clamp(30px, 5.4svh, 46px); }
+/* Sky: fifteen slices of sky side by side. Pointing at one opens it a little; the chosen one opens wide with its name. */
+.sky-strip { display: flex; gap: 5px; height: clamp(96px, 20svh, 170px); margin-top: clamp(16px, 3svh, 26px); }
+.sky-strip button {
+    position: relative; flex: 1 1 0; min-width: 0; overflow: hidden; padding: 0; border: 0; border-radius: 14px; cursor: pointer;
+    background: linear-gradient(var(--sky-top), var(--sky-bottom)); color: var(--text);
+    transition: flex-grow .5s var(--ease), box-shadow .2s;
+}
+.sky-strip button::after {
+    content: ''; position: absolute; left: 50%; bottom: 16%; width: min(64%, 26px); aspect-ratio: 1; translate: -50% 0; border-radius: 50%;
+    background: var(--sun); box-shadow: 0 0 14px color-mix(in srgb, var(--sun) 80%, transparent); transition: bottom .5s var(--ease);
+}
+.sky-strip button:is(:hover, :focus-visible) { flex-grow: 2.2; }
+.sky-strip button[aria-pressed="true"] { flex-grow: 6; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--sun); }
+.sky-strip button[aria-pressed="true"]::after { bottom: 34%; }
+.sky-strip span { position: absolute; left: 12px; bottom: 10px; font-size: .86rem; font-weight: 700; white-space: nowrap; opacity: 0; translate: 0 6px; transition: opacity .3s, translate .4s var(--ease); }
+.sky-strip button[aria-pressed="true"] span { opacity: 1; translate: 0; }
+.sky-strip button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 
 .length-read { margin-top: 14px; font-size: 1.2rem; color: var(--text-2); }
 .length-read strong { margin-right: 8px; font-size: clamp(3.2rem, 8vw, 4.8rem); color: var(--text); font-variant-numeric: tabular-nums; }
@@ -59,37 +115,39 @@
 .start-dots i.on { width: 28px; border-radius: 9px; background: var(--sun); }
 #start-back[hidden] + .start-dots { margin-left: 0; }
 
-@media (max-width: 900px) {
-    .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-/* Phones: a short strip of sky across the top, the question under it. */
-@media (max-width: 760px) {
-    .start { --panel: 100%; --horizon: 21svh; --sun-size: clamp(64px, 11svh, 96px); }
-    .start-nav { padding: 16px 20px; }
-    .start-main { inset: var(--horizon) 0 0 0; padding: 20px 20px 16px; }
-    .start .swatches { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-    .start .swatches button { padding: 4px 4px 6px; font-size: .7rem; }
-    .choices button { padding: 9px 12px; }
-    .choices span { display: none; }
-    .account-fields { grid-template-columns: minmax(0, 1fr); }
-    .step-hint { font-size: .84rem; }
-    .start-foot { padding-top: 14px; }
-}
-
 /* Last step: GitHub and Google side by side, so the step stays one screen on a laptop. */
 .step .social-signin { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
 .step .social-signin .divider { grid-column: 1 / -1; margin: 4px 0 0; }
 /* The page's main landmark, without changing the layout around the form. */
 .start-landmark { display: contents; }
 
-/* The name step shows the tile your partners will see, so the name feels like yours straight away. */
-.tile-preview {
-    position: relative; display: grid; place-items: center; width: min(240px, 60%, 36svh); aspect-ratio: 4 / 3; margin-top: clamp(14px, 3svh, 28px);
-    border-radius: 18px; background: color-mix(in srgb, var(--primary) 22%, var(--surface));
-    box-shadow: 0 24px 50px -28px color-mix(in srgb, var(--sun) 55%, transparent);
+@media (max-width: 900px) {
+    .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-.tile-preview b { color: var(--primary); font-size: 5rem; font-weight: 800; font-stretch: 78%; font-variation-settings: 'wdth' 78; line-height: 1; }
-.tile-preview span { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 3px 10px; border-radius: 999px; background: rgb(0 0 0 / .45); color: #fff; font-size: .78rem; font-weight: 600; }
-.tile-preview i { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--ok); }
-.tile-preview em { overflow: hidden; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 760px) { .tile-preview b { font-size: 3.2rem; } }
+/* Phones: the window becomes a strip across the top, the question under it. */
+@media (max-width: 760px) {
+    .start { --panel: 100%; --strip: 30svh; --horizon: 62%; --sun-size: clamp(56px, 9svh, 84px); }
+    .scene { inset: 0 0 auto; width: 100%; height: var(--strip); border-radius: 0 0 24px 24px; }
+    .scene-ground { gap: 12px; padding: 0 20px; }
+    .scene-clock span { display: none; }
+    .scene-clock strong { font-size: 2rem; }
+    .scene-you { width: 64px; border-radius: 12px; }
+    .scene-you b { font-size: 1.6rem; }
+    .scene-you em { display: none; }
+    .start-nav { padding: 16px 20px; }
+    .start-main { inset: var(--strip) 0 0 0; padding: 18px 20px 16px; }
+    .sky-strip { gap: 3px; height: 92px; }
+    .sky-strip button { border-radius: 9px; }
+    .choices button { padding: 9px 12px; }
+    .choices span { display: none; }
+    .account-fields { grid-template-columns: minmax(0, 1fr); }
+    .step-hint { font-size: .84rem; }
+    .start-foot { padding-top: 14px; }
+}
+/* Short phones: a slimmer window, and slimmer still on the account step, which has the most to fit. */
+@media (max-width: 760px) and (max-height: 720px) {
+    .start { --strip: 24svh; }
+    .start[data-step="account"] { --strip: 15svh; }
+    .start[data-step="account"] .scene-ground { display: none; }
+    .start[data-step="account"] .scene .sky { height: 100%; }
+}

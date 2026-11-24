@@ -39,7 +39,8 @@ export function bindThemePicker(button: HTMLButtonElement) {
     const list = button.nextElementSibling as HTMLElement;
     const options = [...list.querySelectorAll<HTMLElement>('[role="option"]')];
     const name = button.querySelector('.sky-picker-name')!;
-    const COLUMNS = 3;
+    const now = list.querySelector('.sky-picker-now')!;
+    const COLUMNS = 5;
     let saved = currentTheme();
     const show = () => {
         const theme = currentTheme();
@@ -70,7 +71,7 @@ export function bindThemePicker(button: HTMLButtonElement) {
     button.addEventListener('click', () => (list.hidden ? open() : close()));
     options.forEach((option, index) => {
         option.addEventListener('pointerenter', () => option.focus());
-        option.addEventListener('focus', () => preview(option.dataset.value!));
+        option.addEventListener('focus', () => { preview(option.dataset.value!); now.textContent = option.textContent; });
         option.addEventListener('click', () => close(option.dataset.value));
         option.addEventListener('keydown', event => {
             const moves: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: COLUMNS, ArrowUp: -COLUMNS, Home: -index, End: options.length - 1 - index };
