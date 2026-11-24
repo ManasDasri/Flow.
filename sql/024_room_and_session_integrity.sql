@@ -28,6 +28,8 @@ BEGIN
   IF NEW.room_code !~ '^[A-Z0-9]{6}$' THEN RAISE EXCEPTION 'Invalid room code'; END IF;
   IF NEW.pin IS NOT NULL AND NEW.pin !~ '^[0-9]{4}$' THEN RAISE EXCEPTION 'Invalid PIN'; END IF;
   NEW.is_locked := NEW.pin IS NOT NULL;
+  -- One insert per account at a time, so two sent together can't both slip under the cap.
+  PERFORM pg_advisory_xact_lock(hashtext('rooms_guard:' || auth.uid()::text));
   IF (SELECT count(*) FROM public.rooms WHERE created_by = auth.uid() AND created_at > now() - interval '1 day') >= 40 THEN
     RAISE EXCEPTION 'Too many rooms created today';
   END IF;
@@ -50,6 +52,7 @@ BEGIN
   NEW.completed_at := now();                      -- saved as it ends (timer.ts), so never backdated or future
   IF NEW.mode IS NULL OR NEW.mode NOT IN ('focus', 'focus-partial') THEN RAISE EXCEPTION 'Invalid session mode'; END IF;
   IF NEW.duration_seconds IS NULL OR NEW.duration_seconds NOT BETWEEN 1 AND 7500 THEN RAISE EXCEPTION 'Invalid session length'; END IF;
+  PERFORM pg_advisory_xact_lock(hashtext('sessions_guard:' || NEW.user_id::text)); -- as for rooms
   SELECT count(*), coalesce(sum(duration_seconds), 0) INTO recent_count, recent_seconds
     FROM public.sessions WHERE user_id = NEW.user_id AND completed_at > now() - interval '1 day';
   IF recent_count >= 500 OR recent_seconds + NEW.duration_seconds > 86400 THEN
