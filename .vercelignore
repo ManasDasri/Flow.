@@ -6,6 +6,7 @@ assets
 output
 .playwright-cli
 sql
-scripts
+scripts/*
+!scripts/fetch-general-sans.cjs
 TESTING.md
 HOSTING.md
