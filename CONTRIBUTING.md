@@ -85,7 +85,7 @@ Merging to `main` deploys flow-study.me. Some of what the site needs lives outsi
 
 ## Design in one paragraph
 
-The timer is a sun. Every page is a flat sky over a horizon, and the sun is the only round, glowing thing on it; avatars and other markers are squared so they are never mistaken for it. Type is Bricolage Grotesque, condensed and heavy for headlines and the clock. Colour comes from the ten skies in `src/styles/global.css`: use the tokens (`--bg`, `--surface`, `--text`, `--primary`, `--sun`), never fixed colours, so a change works in every sky.
+The timer is a sun. Every page is a flat sky over a horizon, and the sun is the only round, glowing thing on it; avatars and other markers are squared so they are never mistaken for it. Headlines and the clock use General Sans (`--font-display`, downloaded at build time by `scripts/fetch-general-sans.cjs`, never committed). Body text and the wordmark use Bricolage Grotesque. Colour comes from the ten skies in `src/styles/global.css`: use the tokens (`--bg`, `--surface`, `--text`, `--primary`, `--sun`), never fixed colours, so a change works in every sky.
 
 ## Reporting problems
 

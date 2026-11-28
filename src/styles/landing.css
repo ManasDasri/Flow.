@@ -70,7 +70,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 24px; }
     /* The headline stands on the horizon: start the hero where the sky ends. */
     margin-top: calc(var(--horizon) - 92px + 28px);
 }
-.hero h1 { font-size: clamp(3.6rem, 10.4vw, 10rem); font-weight: 800; line-height: .86; letter-spacing: -.035em; }
+.hero h1 { font-size: clamp(2.85rem, 8.2vw, 7.9rem); font-weight: 800; line-height: .86; letter-spacing: -.035em; }
 .hero-side > p { max-width: 44ch; font-size: 1.1rem; line-height: 1.6; color: var(--text-2); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
 .demo { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding-top: 24px; border-top: 1.5px solid color-mix(in srgb, var(--text) 16%, transparent); color: var(--text-2); font-size: .95rem; }
@@ -128,7 +128,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 24px; }
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent), 0 20px 50px -20px rgb(0 0 0 / .6);
     transition: left .7s var(--ease), right .7s var(--ease), top .7s var(--ease);
 }
-.callout strong { font-size: 1.2rem; font-weight: 700; font-stretch: 85%; font-variation-settings: 'wdth' 85; letter-spacing: -.01em; line-height: 1.1; }
+.callout strong { font-size: 1.2rem; font-weight: 700; font-family: var(--font-display); letter-spacing: -.01em; line-height: 1.1; }
 .callout span { color: var(--text-2); font-size: .86rem; line-height: 1.5; }
 /* With nothing lit, the note sits centred at the foot of the room. */
 .whole-room .callout { left: 50%; top: auto; bottom: 8%; translate: -50% 0; width: min(420px, 60%); }
@@ -137,7 +137,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 24px; }
 .how { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 48px clamp(32px, 6vw, 96px); }
 .steps { display: grid; gap: 32px; list-style: none; counter-reset: step; }
 .steps li { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); counter-increment: step; }
-.steps li::before { content: counter(step); grid-row: span 2; color: var(--primary); font-size: 3.4rem; font-weight: 800; font-stretch: 78%; font-variation-settings: 'wdth' 78; line-height: .9; }
+.steps li::before { content: counter(step); grid-row: span 2; color: var(--primary); font-size: 3.4rem; font-weight: 800; font-family: var(--font-display); line-height: .9; }
 .steps h3 { font-size: 1.5rem; }
 .steps p { margin-top: 6px; }
 

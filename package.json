@@ -9,6 +9,7 @@
   "scripts": {
     "test": "node --test scripts/server.test.cjs scripts/utils.test.cjs scripts/focus-progress.test.cjs scripts/host-state.test.cjs scripts/automation.test.cjs scripts/gallery.test.cjs",
     "start": "node server.js",
+    "predev": "node scripts/fetch-general-sans.cjs",
     "dev": "astro dev",
     "test:db": "node --test scripts/sql-integration.test.cjs",
     "pretest:browser": "npm run build",
@@ -16,6 +17,7 @@
     "check:live": "node scripts/check-live.cjs",
     "preview:social": "node scripts/generate-social-preview.cjs",
     "icons": "node scripts/generate-app-icons.cjs",
+    "prebuild": "node scripts/fetch-general-sans.cjs",
     "build": "astro build",
     "check": "astro check",
     "pretest": "npm run check && npm run build",
