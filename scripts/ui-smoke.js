@@ -577,6 +577,8 @@ async (page) => {
     });
     assert(JSON.stringify(await page.locator('#chat-messages .message-sender').allInnerTexts()) === JSON.stringify(['Sam', 'AI Assistant, asked by Sam']), 'Chat must show the verified sender');
     assert(await page.locator('#chat-messages .ai-question').innerText() === 'Sam asked SN1 vs SN2?', 'An answer shows the question it answers, and who asked it');
+    assert(await page.evaluate(() => [...document.querySelectorAll('#chat-messages .message-time')].every(time => Math.abs(Date.parse(time.dateTime) - Date.now()) < 60000
+        && time.textContent === new Date(time.dateTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })) && document.querySelectorAll('#chat-messages .message-time').length === 2), 'Every message shows the time it arrived');
     await page.waitForFunction(() => !document.getElementById('video-wrapper-zz-sam'), undefined, { timeout: 10000 }); // the goodbye clears their tile
     await page.evaluate(() => { document.getElementById('chat-messages').replaceChildren(); document.getElementById('chat-unread').textContent = '0'; document.getElementById('chat-unread').classList.add('hidden'); document.getElementById('notify-clear').click(); });
 

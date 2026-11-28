@@ -275,6 +275,7 @@ body[data-timer="break"] .breath { display: block; }
 .chat-message.own-message { align-self: flex-end; border-radius: 16px 4px 16px 16px; background: var(--hover); }
 .ai-message { max-width: 100%; border: 1.5px solid color-mix(in srgb, var(--sun) 50%, transparent); background: transparent; }
 .message-sender { margin-bottom: 2px; font-size: .72rem; font-weight: 600; color: var(--text-3); }
+.message-time { display: block; margin-top: 2px; text-align: right; font-size: .68rem; color: var(--text-3); font-variant-numeric: tabular-nums; }
 /* Chat formatting: a light touch, sized for a narrow panel. */
 .message-body > * + * { margin-top: .55em; }
 .message-body ol, .message-body ul { padding-left: 1.3em; white-space: normal; }
