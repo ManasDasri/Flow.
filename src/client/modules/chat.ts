@@ -28,7 +28,9 @@ export const initChat = (_roomId: string, user: string, onMessageFromOthers?: (s
 // the room, stamped by the database with who really sent it (`from`). The name
 // shown comes from that stamp, not from what the message says about itself, so
 // nobody can post as someone else or pass their own words off as the assistant's.
-export const handleIncomingMessage = (message: unknown, own = false) => {
+// `at` is when it was sent. Room messages are live (nothing is replayed), so
+// arrival on this clock is accurate, and a sender can't claim a false time.
+export const handleIncomingMessage = (message: unknown, own = false, at = new Date()) => {
     if (!message || typeof message !== 'object' || !('text' in message) || !('sender' in message) || typeof message.text !== 'string' || typeof message.sender !== 'string') return;
     const from = 'from' in message && typeof message.from === 'string' ? message.from : null;
     const claimed = message.sender.slice(0, 80);
@@ -55,13 +57,23 @@ export const handleIncomingMessage = (message: unknown, own = false) => {
         asked.append(Object.assign(document.createElement('span'), { textContent: own || !from ? 'You asked' : `${verified} asked` }), ' ', question);
         div.append(asked);
     }
-    div.append(body);
+    div.append(body, stamp(at));
     chatMessages.append(div);
     // Keep this ephemeral conversation bounded during long study sessions.
     while (chatMessages.children.length > 300) chatMessages.firstElementChild!.remove();
     chatMessages.scrollTop = chatMessages.scrollHeight;
     if (!own) onOthers?.(label, text);
 };
+
+// The time in the viewer's own format (12 or 24 hour), full date on hover.
+function stamp(at: Date) {
+    const time = document.createElement('time');
+    time.className = 'message-time';
+    time.dateTime = at.toISOString();
+    time.textContent = at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    time.title = at.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+    return time;
+}
 
 // A line in the chat that only this person sees: reminders are theirs, not the room's.
 export function showLocalNote(text: string) {
@@ -93,10 +105,11 @@ async function sendMessage() {
     if (isAi && aiPending) return;
     if (!isAi) {
         chatInput.value = '';
+        const at = new Date();
         try {
             const status = await sendToRoom('chat-message', { sender: username, text });
             if (status && status !== 'ok') throw new Error('Message delivery failed');
-            handleIncomingMessage({ sender: username, text }, true);
+            handleIncomingMessage({ sender: username, text }, true, at);
         } catch {
             if (!chatInput.value) chatInput.value = text;
             notify('Message was not sent. Check your connection and try again.', 'error');
