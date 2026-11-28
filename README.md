@@ -157,7 +157,7 @@ Supabase handles authentication, PostgreSQL persistence, task changes, presence,
 
 `/api/ai` and `/api/turn-credentials` spend provider credit, so they require a signed-in user: the browser sends its Supabase access token and the server asks Supabase to validate it before calling Groq or Twilio. Both stay rate limited per address. Every page is served with a Content-Security-Policy and related headers, defined once in `vercel.json`.
 
-Old invite links (`/?room=CODE`) redirect to the room. The landing page's opening (the wordmark in the dark, then a sunrise) is CSS only, plays once per browser session, and is skipped under reduced motion. Type is Bricolage Grotesque, self-hosted.
+Old invite links (`/?room=CODE`) redirect to the room. The landing page's opening (the wordmark in the dark, then a sunrise) is CSS only, plays once per browser session, and is skipped under reduced motion. Headlines and the clock are General Sans, downloaded from Fontshare at build time because its license doesn't allow committing it to a public repo; everything else, including the wordmark, is Bricolage Grotesque, self-hosted.
 
 ## License
 

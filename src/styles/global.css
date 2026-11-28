@@ -111,8 +111,12 @@
     --text: #1c2414; --text-2: #414a35; --text-3: #5d6650;
 }
 
+/* Headlines and the clock. Downloaded at build time (scripts/fetch-general-sans.cjs), not committed. */
+@font-face { font-family: "General Sans"; src: url("/fonts/general-sans.woff2") format("woff2"); font-weight: 200 700; font-display: swap; }
+
 :root {
     --font: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+    --font-display: "General Sans", var(--font);
     --radius-sm: 12px; --radius-md: 20px; --radius-lg: 28px;
     --ease: cubic-bezier(.2, .8, .2, 1);
     --horizon: 52svh;      /* where the sky meets the ground on this page */
@@ -145,8 +149,8 @@ label { display: block; font-size: .85rem; color: var(--text-2); }
 p { text-wrap: pretty; }
 
 /* Display type: condensed and heavy, set tight. Used for headlines and the clock. */
-h1, h2, h3, .display { font-weight: 700; font-stretch: 78%; font-variation-settings: 'wdth' 78; letter-spacing: -.02em; line-height: 1; }
-h3 { font-stretch: 90%; font-variation-settings: 'wdth' 90; letter-spacing: -.01em; line-height: 1.15; }
+h1, h2, h3, .display { font-weight: 700; font-family: var(--font-display); letter-spacing: -.02em; line-height: 1; }
+h3 { font-family: var(--font-display); letter-spacing: -.01em; line-height: 1.15; }
 
 /* ── The sky: a flat two-colour field with a little print grain, and one sun. ── */
 .sky {

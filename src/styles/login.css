@@ -5,7 +5,7 @@
 .login-photo .brand, .login-photo .github-star { align-self: flex-start; }
 .login-photo > div { margin-bottom: auto; padding-top: 4vh; }
 .login-photo .github-star { padding: 2px 14px; border-radius: 999px; background: var(--bg); color: var(--text); }
-.login-quote { max-width: 11ch; font-size: clamp(2.8rem, 5.4vw, 5rem); font-weight: 800; font-stretch: 78%; font-variation-settings: 'wdth' 78; line-height: .88; letter-spacing: -.03em; }
+.login-quote { max-width: 11ch; font-size: clamp(2.8rem, 5.4vw, 5rem); font-weight: 800; font-family: var(--font-display); line-height: .88; letter-spacing: -.03em; }
 .invite-note { max-width: 36ch; margin-top: 24px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--bg); color: var(--text-2); font-size: .92rem; line-height: 1.55; }
 .invite-note strong { color: var(--text); letter-spacing: .08em; }
 
