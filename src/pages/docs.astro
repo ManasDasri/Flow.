@@ -5,72 +5,177 @@ import Icon from '../components/Icon.astro';
 import '../styles/pages.css';
 import { SOUNDS } from '../client/modules/soundscape';
 const repo = 'https://github.com/ManasDasri/Flow-study';
+const toc = [['start', 'sunrise', 'Getting started'], ['timer', 'sun', 'The sun timer'], ['rooms', 'hash', 'Rooms and invites'], ['groups', 'users', 'Study groups'], ['sound', 'headphones', 'Sound'], ['shortcuts', 'keyboard', 'Shortcuts'], ['data', 'lock', 'Your data'], ['self-host', 'github', 'Run your own copy']] as const;
 const shortcuts = [['S', 'Start or pause the timer'], ['F', 'Enter or leave focus mode'], ['M', 'Mute or unmute your microphone'], ['V', 'Turn your camera on or off'], ['C', 'Open chat and start a message'], ['N', 'Open notifications'], ['?', 'Show the shortcut list']];
+// One set: four focus blocks, a short break after each of the first three, a long one after the fourth.
+const set = [25, 5, 25, 5, 25, 5, 25, 15].map((min, i) => ({ min, kind: i % 2 === 0 ? 'focus' : i === 7 ? 'long' : 'short' }));
+const ext = { target: '_blank', rel: 'noopener noreferrer' };
 ---
 <Page title="Docs | Flow" bodyClass="plain-page">
     <Sky />
     <header class="plain-nav">
         <a href="/" class="brand" aria-label="Flow home">flow<i></i></a>
-        <nav aria-label="Main"><a href="/groups.html"><Icon name="users" size={16} />Study groups</a><a href={repo} target="_blank" rel="noopener noreferrer"><Icon name="github" size={16} />GitHub</a><a href="/start.html" class="btn" data-home-when-signed-in><Icon name="sunrise" size={16} class="i-out" /><Icon name="house" size={16} class="i-home" /><span class="link-label">Get started</span></a></nav>
+        <nav aria-label="Main"><a href="/groups.html"><Icon name="users" size={16} />Study groups</a><a href={repo} {...ext}><Icon name="github" size={16} />GitHub</a><a href="/start.html" class="btn" data-home-when-signed-in><Icon name="sunrise" size={16} class="i-out" /><Icon name="house" size={16} class="i-home" /><span class="link-label">Get started</span></a></nav>
     </header>
     <main class="plain-main docs">
-        <h1>How Flow works.</h1>
-        <p class="lead">Everything you need to run a study session, on one page.</p>
+        <div class="docs-intro">
+            <h1>How Flow works.</h1>
+            <p class="lead">Everything you need to run a study session, on one page.</p>
+        </div>
 
         <nav class="docs-toc" aria-label="On this page">
-            <a href="#start"><Icon name="sunrise" size={15} />Getting started</a><a href="#timer"><Icon name="sun" size={15} />The sun timer</a><a href="#rooms"><Icon name="hash" size={15} />Rooms and invites</a><a href="#groups"><Icon name="users" size={15} />Study groups</a><a href="#sound"><Icon name="headphones" size={15} />Sound</a><a href="#shortcuts"><Icon name="keyboard" size={15} />Shortcuts</a><a href="#data"><Icon name="lock" size={15} />Your data</a><a href="#self-host"><Icon name="github" size={15} />Run your own copy</a>
+            <p>On this page</p>
+            {toc.map(([id, icon, label]) => <a href={'#' + id}><Icon name={icon} size={15} />{label}</a>)}
         </nav>
 
-        <section id="start">
-            <h2>Getting started</h2>
-            <p><a href="/start.html">Setup</a> asks four things: your name, a sky, how long you like to focus, and whether you want background sound. Then you create an account with an email and password. Your choices are saved in your browser and applied to the first room you create.</p>
-            <p>After that you land on your home screen. Your name, today’s focus, your streak, and the last seven days are on the left. On the right are the three things you can do: start a room (for people you invite, or open to anyone on the study-groups board), join with a code, or take a seat in a group that’s open now.</p>
-        </section>
+        <article class="docs-body">
+            <figure class="docs-shot">
+                <img data-room-shot="" src="/rooms/forest.webp" width="1600" height="900" decoding="async" alt="A Flow room: the sun and session clock on the left, study partners in the middle, and shared tasks on the right.">
+                <figcaption>A room. The sun and clock on the left, the people you’re with in the middle, and tasks, chat and sound on the right.</figcaption>
+            </figure>
 
-        <section id="timer">
-            <h2>The sun timer</h2>
-            <p>The timer is shared: whoever hosts the room runs it, and when they start, pause, or reset it, it changes for everyone in the room. The sun shows progress. It sinks during a focus block and has set when the block ends; during a break it rises again and slowly grows and shrinks as a breathing pace.</p>
-            <p>Four focus blocks make a set. After the first three the room moves to a short break, and after the fourth to a long one. The default lengths are 25, 5, and 15 minutes; change them from the settings button under the clock, and the new lengths apply to the whole room. Each block starts by itself when the last one ends, so nobody has to press start; turn off “Start the next block automatically” in the same settings to start each one by hand. The room remembers where its timer is, so a reload or a sleeping laptop picks up the block where it stands.</p>
-            <p>Focus mode (the expand button, or <kbd>F</kbd>) hides everything except the sky, the clock, and the people you’re with.</p>
-        </section>
+            <section id="start">
+                <h2>Getting started</h2>
+                <ol class="docs-steps">
+                    <li><strong>Run <a href="/start.html">setup</a>.</strong> It asks four things: your name, a sky, how long you like to focus, and whether you want background sound.</li>
+                    <li><strong>Create an account</strong> with an email and password.</li>
+                    <li><strong>Start studying.</strong> Your choices are saved in your browser and applied to the first room you create.</li>
+                </ol>
+                <p>After that you land on your home screen. Your name, today’s focus, your streak, and the last seven days are on the left. On the right are the three things you can do:</p>
+                <ul>
+                    <li><strong>Start a room</strong>, for people you invite or open to anyone on the study-groups board.</li>
+                    <li><strong>Join with a code.</strong></li>
+                    <li><strong>Take a seat</strong> in a group that’s open now.</li>
+                </ul>
+            </section>
 
-        <section id="rooms">
-            <h2>Rooms and invites</h2>
-            <p>A room has a six-character code. Press Invite to copy a link that carries the code; anyone who opens it signs in and arrives in your room. Type a four-digit PIN before creating a room if you want it locked.</p>
-            <p>Calls are encrypted. Video and voice are encrypted in each browser with keys that only the two browsers on a call hold (WebRTC’s DTLS-SRTP), and travel directly between them. When a direct path isn’t possible they pass through a relay, which forwards the encrypted stream and cannot read it. Flow’s own servers never receive your video or voice. A direct call does show the people on it your IP address, as any peer-to-peer call does. In groups from the study-groups board, Flow hides it by sending your calls through the relay instead; you can turn this on or off for any room with “Hide my IP address” in the timer settings. You can turn your camera or microphone off at any time, and Flow works fine with both off. Tasks are shared with the room and stay there after you leave. Chat is not kept as a history: people who join later don’t see earlier messages, and it is gone from your screen when you leave. Start a message with <kbd>/ai</kbd> to ask the study assistant a question.</p>
-            <p>The bell in the header collects what happened while you were looking elsewhere: chat messages you hadn’t seen, people joining and leaving, finished focus sessions and breaks, a change of host, and your reminders. Its number shows how many are new, and opening it marks them read; select a chat message there to open the chat. Nothing in it is saved: it clears when you leave or reload the page. When a message arrives while the Chat tab isn’t showing, in focus mode, or while Flow is in another tab, the Chat tab shows an unread count and a short tone plays; opening the tab clears the count. To be told about new messages, reminders, and finished sessions while Flow is in a background tab, tick “Send me system notifications” in the timer settings (the settings button under the clock) and save. Your browser asks for permission the first time, and the choice is kept on this device.</p>
-        </section>
+            <section id="timer">
+                <h2>The sun timer</h2>
+                <p>The timer is shared: whoever hosts the room runs it, and when they start, pause, or reset it, it changes for everyone in the room. The sun shows progress. It sinks during a focus block and has set when the block ends; during a break it rises again and slowly grows and shrinks as a breathing pace.</p>
+                <figure class="docs-set">
+                    <div class="set-bar" role="img" aria-label="One set: four 25-minute focus blocks, with 5-minute breaks after the first three and a 15-minute break after the fourth.">
+                        {set.map(({ min, kind }) => <span class={kind} style={`flex-grow: ${min}`}>{min}</span>)}
+                    </div>
+                    <figcaption><span class="key focus"></span>Focus <span class="key short"></span>Short break <span class="key long"></span>Long break <em>Default lengths, in minutes</em></figcaption>
+                </figure>
+                <p>Four focus blocks make a set. After the first three the room moves to a short break, and after the fourth to a long one. Change the lengths from the settings button under the clock; the new lengths apply to the whole room.</p>
+                <ul>
+                    <li><strong>Blocks start by themselves</strong> when the last one ends, so nobody has to press start. Turn off “Start the next block automatically” in the same settings to start each one by hand.</li>
+                    <li><strong>The room remembers where its timer is</strong>, so a reload or a sleeping laptop picks up the block where it stands.</li>
+                    <li><strong>Focus mode</strong> (the expand button, or <kbd>F</kbd>) hides everything except the sky, the clock, and the people you’re with.</li>
+                </ul>
+            </section>
 
-        <section id="groups">
-            <h2>Study groups</h2>
-            <p>The <a href="/groups.html">study-groups board</a> shows two things: rooms that are open right now, and groups planned for later. Anyone can read it; taking a seat or hosting needs an account. Groups hold two to six people.</p>
-            <p>Each open group shows its topic and subject, whether cameras are expected and how much talking there is, how many seats are free, and what the room is doing this minute (“Focusing, 14 min left”). Search by topic, filter by subject, or press “Find me a seat” to be placed in the open group with the most room.</p>
-            <p>To host, use “Host a group” on the board. Choose “Now” and you land in a new room that is already listed. Choose “Later”, pick a time within the next two weeks, and it appears under “Coming up”, where others can say they’re in. From fifteen minutes before the start, your plan shows “Start now”, which opens the room and replaces the plan with a live listing. You can also list any room without a PIN from its Invite dialog.</p>
-            <p>Your room stays on the board while you’re in it and comes off when you leave; if your browser closes unexpectedly, it disappears within two minutes. As host you can stop new people joining from the Invite dialog, and remove someone by hovering their tile and pressing Remove. A removed person cannot rejoin that room. If a listing isn’t about studying, press Report on it: three reports hide a listing.</p>
-        </section>
+            <section id="rooms">
+                <h2>Rooms and invites</h2>
+                <p>A room has a six-character code. Press Invite to copy a link that carries the code; anyone who opens it signs in and arrives in your room. Type a four-digit PIN before creating a room if you want it locked.</p>
 
-        <section id="sound">
-            <h2>Sound</h2>
-            <p>The Sound tab has two separate things. Soundscapes are made in your own browser and only you hear them:</p>
-            <ul>{SOUNDS.map(([, name, text]) => <li><strong>{name}.</strong> {text}</li>)}</ul>
-            <p>Room audio shares a YouTube or Spotify link with everyone. Each person presses play themselves and controls their own volume; playback is not synchronised.</p>
-        </section>
+                <h3>Calls</h3>
+                <ul>
+                    <li><strong>Calls are encrypted.</strong> Video and voice are encrypted in each browser with keys that only the two browsers on a call hold (WebRTC’s DTLS-SRTP), and travel directly between them.</li>
+                    <li>When a direct path isn’t possible they pass through a relay, which forwards the encrypted stream and cannot read it. <strong>Flow’s own servers never receive your video or voice.</strong></li>
+                    <li>A direct call does show the people on it your IP address, as any peer-to-peer call does. In groups from the study-groups board, Flow hides it by sending your calls through the relay instead; turn this on or off for any room with “Hide my IP address” in the timer settings.</li>
+                    <li>You can turn your camera or microphone off at any time, and Flow works fine with both off.</li>
+                </ul>
 
-        <section id="shortcuts">
-            <h2>Shortcuts</h2>
-            <dl class="docs-keys">{shortcuts.map(([key, action]) => <div><dt><kbd>{key}</kbd></dt><dd>{action}</dd></div>)}</dl>
-            <p>Shortcuts are ignored while you’re typing or a dialog is open. <kbd>C</kbd> and <kbd>N</kbd> leave focus mode to show chat or notifications.</p>
-        </section>
+                <h3>Tasks, chat and the assistant</h3>
+                <figure class="docs-shot">
+                    <img data-room-shot="chat" src="/rooms/forest-chat.webp" width="1600" height="900" loading="lazy" decoding="async" alt="A Flow room with the Chat tab open, showing messages and an answer from the study assistant.">
+                </figure>
+                <p>Tasks are shared with the room and stay there after you leave. Chat is not kept as a history: people who join later don’t see earlier messages, and it is gone from your screen when you leave. Start a message with <kbd>/ai</kbd> to ask the study assistant a question.</p>
 
-        <section id="data">
-            <h2>Your data</h2>
-            <p>Flow stores your email, your display name, the tasks you add to rooms, and a record of each focus block you finish (when, and how long). If you list or plan a group on the board, its topic and your display name are public, visible without an account, until the listing ends.</p>
-            <p>If you sign in with GitHub or Google, the sign-in service also keeps the basic profile they share (your name and a link to your picture); Flow doesn’t use or show it. To see how Flow is used and how fast it loads, the site counts page views and load times with Vercel Web Analytics and Speed Insights. They use no cookies, and page addresses are sent without room codes. Flow also counts visitors itself: your browser keeps a random id (not a cookie) and sends it with the name of the page, the site that linked you here, and whether you’re on a touch screen or signed in, once per page per day. No IP address or room code is kept with it. Signing up, logging in, and asking for a sign-in email go through Cloudflare Turnstile, a check that tells people from bots; most of the time it asks you nothing. If something breaks in your browser, Flow sends itself a short error report (the message, the line in Flow’s code, and the page, without room codes or anything about you) so it can be fixed. Video and voice are never stored, and calls are encrypted between the browsers taking part. Chat is not shown to anyone who joins later; messages pass through Flow’s database on the way, where they are cleared automatically within three days. A question sent with <kbd>/ai</kbd> goes to the assistant’s provider to be answered and is not kept by Flow. Security details, including what is not protected yet, are in <a href={repo + '/blob/main/SECURITY.md'} target="_blank" rel="noopener noreferrer">SECURITY.md</a>.</p>
-        </section>
+                <h3>Notifications</h3>
+                <p>The bell in the header collects what happened while you were looking elsewhere: chat messages you hadn’t seen, people joining and leaving, finished focus sessions and breaks, a change of host, and your reminders. Its number shows how many are new, and opening it marks them read; select a chat message there to open the chat. Nothing in it is saved: it clears when you leave or reload the page.</p>
+                <p>When a message arrives while the Chat tab isn’t showing, in focus mode, or while Flow is in another tab, the Chat tab shows an unread count and a short tone plays; opening the tab clears the count.</p>
+                <p class="docs-tip"><Icon name="bell" size={16} /><span>To be told about new messages, reminders, and finished sessions while Flow is in a background tab, tick “Send me system notifications” in the timer settings (the settings button under the clock) and save. Your browser asks for permission the first time, and the choice is kept on this device.</span></p>
+            </section>
 
-        <section id="self-host">
-            <h2>Run your own copy</h2>
-            <p>Flow is open source under the <a href={repo + '/blob/main/LICENSE'} target="_blank" rel="noopener noreferrer">MIT license</a>. Clone the <a href={repo} target="_blank" rel="noopener noreferrer">repository</a> and run <code>npm ci</code> then <code>npm run dev:demo</code> to explore it offline with no accounts or keys. The README covers connecting your own Supabase project and deploying, and CONTRIBUTING.md covers sending changes.</p>
-        </section>
+            <section id="groups">
+                <h2>Study groups</h2>
+                <p>The <a href="/groups.html">study-groups board</a> shows two things: rooms that are open right now, and groups planned for later. Anyone can read it; taking a seat or hosting needs an account. Groups hold two to six people.</p>
+
+                <h3>Finding a seat</h3>
+                <p>Each open group shows its topic and subject, whether cameras are expected and how much talking there is, how many seats are free, and what the room is doing this minute (“Focusing, 14 min left”). Search by topic, filter by subject, or press “Find me a seat” to be placed in the open group with the most room.</p>
+
+                <h3>Hosting</h3>
+                <p>Use “Host a group” on the board.</p>
+                <ul>
+                    <li><strong>Now:</strong> you land in a new room that is already listed.</li>
+                    <li><strong>Later:</strong> pick a time within the next two weeks, and it appears under “Coming up”, where others can say they’re in. From fifteen minutes before the start, your plan shows “Start now”, which opens the room and replaces the plan with a live listing.</li>
+                </ul>
+                <p>You can also list any room without a PIN from its Invite dialog. Your room stays on the board while you’re in it and comes off when you leave; if your browser closes unexpectedly, it disappears within two minutes.</p>
+
+                <h3>Keeping it tidy</h3>
+                <p>As host you can stop new people joining from the Invite dialog, and remove someone by hovering their tile and pressing Remove. A removed person cannot rejoin that room. If a listing isn’t about studying, press Report on it: three reports hide a listing.</p>
+            </section>
+
+            <section id="sound">
+                <h2>Sound</h2>
+                <p>The Sound tab has two separate things.</p>
+                <h3>Soundscapes</h3>
+                <p>Made in your own browser; only you hear them.</p>
+                <ul class="docs-sounds">{SOUNDS.map(([, name, text]) => <li><strong>{name}</strong>{text}</li>)}</ul>
+                <h3>Room audio</h3>
+                <p>Shares a YouTube or Spotify link with everyone. Each person presses play themselves and controls their own volume; playback is not synchronised.</p>
+            </section>
+
+            <section id="shortcuts">
+                <h2>Shortcuts</h2>
+                <dl class="docs-keys">{shortcuts.map(([key, action]) => <div><dt><kbd>{key}</kbd></dt><dd>{action}</dd></div>)}</dl>
+                <p>Shortcuts are ignored while you’re typing or a dialog is open. <kbd>C</kbd> and <kbd>N</kbd> leave focus mode to show chat or notifications.</p>
+            </section>
+
+            <section id="data">
+                <h2>Your data</h2>
+                <h3>What Flow stores</h3>
+                <dl class="docs-data">
+                    <div><dt>Your account</dt><dd>Your email and display name.</dd></div>
+                    <div><dt>Tasks</dt><dd>The tasks you add to rooms.</dd></div>
+                    <div><dt>Focus blocks</dt><dd>A record of each block you finish: when, and how long.</dd></div>
+                    <div><dt>Board listings</dt><dd>If you list or plan a group, its topic and your display name are public, visible without an account, until the listing ends.</dd></div>
+                    <div><dt>Chat</dt><dd>Not shown to anyone who joins later. Messages pass through Flow’s database on the way, where they are cleared automatically within three days.</dd></div>
+                </dl>
+
+                <h3>What Flow doesn’t keep</h3>
+                <dl class="docs-data">
+                    <div><dt>Video and voice</dt><dd>Never stored. Calls are encrypted between the browsers taking part.</dd></div>
+                    <div><dt>Questions to <kbd>/ai</kbd></dt><dd>Go to the assistant’s provider to be answered and are not kept by Flow.</dd></div>
+                    <div><dt>GitHub or Google profile</dt><dd>If you sign in with one, the sign-in service keeps the basic profile they share (your name and a link to your picture). Flow doesn’t use or show it.</dd></div>
+                </dl>
+
+                <h3>How the site is measured</h3>
+                <dl class="docs-data">
+                    <div><dt>Vercel Analytics</dt><dd>Page views and load times, through Vercel Web Analytics and Speed Insights. No cookies, and page addresses are sent without room codes.</dd></div>
+                    <div><dt>Visitor counts</dt><dd>Your browser keeps a random id (not a cookie) and sends it with the name of the page, the site that linked you here, and whether you’re on a touch screen or signed in, once per page per day. No IP address or room code is kept with it.</dd></div>
+                    <div><dt>Cloudflare Turnstile</dt><dd>Signing up, logging in, and asking for a sign-in email go through this check that tells people from bots; most of the time it asks you nothing.</dd></div>
+                    <div><dt>Error reports</dt><dd>If something breaks in your browser, Flow sends itself the message, the line in Flow’s code, and the page, without room codes or anything about you.</dd></div>
+                </dl>
+                <p>Security details, including what is not protected yet, are in <a href={repo + '/blob/main/SECURITY.md'} {...ext}>SECURITY.md</a>.</p>
+            </section>
+
+            <section id="self-host">
+                <h2>Run your own copy</h2>
+                <p>Flow is open source under the <a href={repo + '/blob/main/LICENSE'} {...ext}>MIT license</a>. Clone the <a href={repo} {...ext}>repository</a> and run these to explore it offline, with no accounts or keys:</p>
+                <pre class="docs-code"><code>npm ci
+npm run dev:demo</code></pre>
+                <p>The <a href={repo + '#readme'} {...ext}>README</a> covers connecting your own Supabase project and deploying, and <a href={repo + '/blob/main/CONTRIBUTING.md'} {...ext}>CONTRIBUTING.md</a> covers sending changes.</p>
+            </section>
+
+            <p class="docs-edit"><a href={repo + '/blob/main/src/pages/docs.astro'} {...ext}><Icon name="writing" size={15} />Something wrong or missing? Edit this page on GitHub</a></p>
+        </article>
     </main>
+    <script>
+        import { currentTheme } from '../client/theme';
+        // Screenshots in the reader's own sky, as on the home page.
+        for (const img of document.querySelectorAll<HTMLImageElement>('[data-room-shot]')) {
+            const still = img.dataset.roomShot;
+            img.src = `/rooms/${currentTheme()}${still ? '-' + still : ''}.webp`;
+        }
+        // Light up the contents link for the section being read.
+        const links = new Map([...document.querySelectorAll<HTMLAnchorElement>('.docs-toc a')].map(a => [a.hash.slice(1), a]));
+        const spy = new IntersectionObserver(entries => {
+            for (const entry of entries) if (entry.isIntersecting) links.forEach((a, id) => id === entry.target.id ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current'));
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        document.querySelectorAll('.docs-body section').forEach(section => spy.observe(section));
+    </script>
 </Page>
